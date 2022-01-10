@@ -16,10 +16,8 @@ if __name__ == "__main__":
         print("User authorization failed")
         sys.exit(0)
 
-    # Задаем параметры для первого запроса
-    # Задаем имя проекта
-    ximc_user.set_project("EP-software")
-    # Задаем фильтры аналогично веб-интерфейсу ximc
+    # Задаем параметры для первого запроса (фильтры задаются аналогично веб-интерфейсу ximc)
+    ximc_user.add_filter("Проект", "соответствует", "EP-software")
     ximc_user.add_filter("Статус", "соответствует", "Closed")
     ximc_user.add_filter("Трекер", "не соответствует", "Bug")
     ximc_user.add_filter("Приоритет", "соответствует", "Normal")
@@ -35,23 +33,37 @@ if __name__ == "__main__":
     ximc_user.add_filter("Последний изменивший", "соответствует", "VladBelov")
     ximc_user.add_filter("Задача", ">=", 20033)
     # Запрашиваем необходимые итоговые параметры
-    totals = ximc_user.get_totals("Оценка временных затрат", "Трудозатраты", "Payment cash",
-                                  "Payment cashless", "Rate")
+    totals = ximc_user.get_totals("Оценка временных затрат", "Трудозатраты", "Payment cash", "Payment cashless", "Rate")
     # В итоге получаем словарь в виде: {"название параметра": значение}
     print("Project: EP-software")
     for option_name, value in totals.items():
         print(f"{option_name}: {value}")
 
-    # Задаем параметры для следующего запроса
-    # ОБЯЗАТЕЛЬНО задаем имя проекта (даже если проект тот же)
-    ximc_user.set_project("Payments")
+    # Задаем параметры для следующего запроса. Но сначала нужно очистить ранее заданные фильтры
+    ximc_user.clear_filters()
     # Задаем фильтры аналогично веб-интерфейсу ximc
-    ximc_user.add_filter("Статус", "закрыто")
-    ximc_user.add_filter("Создано", "между", "2021-09-09", "2021-11-11")
+    ximc_user.add_filter("Project", "is", "Payments")
+    ximc_user.add_filter("Status", "closed")
+    ximc_user.add_filter("Created", "between", "2021-09-09", "2021-11-11")
     # Запрашиваем необходимые итоговые параметры
-    totals = ximc_user.get_totals("Оценка временных затрат", "Трудозатраты", "Payment cash",
-                                  "Payment cashless", "Rate", "Payment tail")
+    totals = ximc_user.get_totals("Estimated time", "Spent time", "Payment cash", "Payment cashless", "Rate",
+                                  "Payment tail")
     # В итоге получаем словарь в виде: {"название параметра": значение}
     print("\nProject: Payments")
+    for option_name, value in totals.items():
+        print(f"{option_name}: {value}")
+
+    # Задаем параметры для следующего запроса. Но сначала нужно очистить ранее заданные фильтры
+    ximc_user.clear_filters()
+    ximc_user.add_filter("Status", "is", "Closed")
+    ximc_user.add_filter("Tracker", "is not", "Bug")
+    ximc_user.add_filter("Priority", "is", "Normal")
+    ximc_user.add_filter("Author", "is", "dasha")
+    ximc_user.add_filter("Assignee", "is", "vladimirov_iy")
+    ximc_user.add_filter("% Done", ">=", 50)
+    # Запрашиваем необходимые итоговые параметры
+    totals = ximc_user.get_totals("Estimated time", "Spent time", "Payment cash", "Payment cashless", "Rate")
+    # В итоге получаем словарь в виде: {"название параметра": значение}
+    print("\nAll projects")
     for option_name, value in totals.items():
         print(f"{option_name}: {value}")
