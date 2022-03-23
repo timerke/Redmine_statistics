@@ -3,6 +3,7 @@ File with class to work with Ximc Redmine.
 """
 
 import re
+import time
 from typing import Callable, Dict, Iterable, List, Optional, Tuple
 import requests
 from bs4 import BeautifulSoup
@@ -10,6 +11,10 @@ from redminelib import Redmine
 from redminelib.exceptions import ForbiddenError
 from redminelib.resources.standard import Project, User
 import utils as ut
+
+HEADERS = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
+                         "Chrome/99.0.4844.82 Safari/537.36"}
+MAX_ATTEMPTS_NUMBER = 5
 
 
 def check_auth(func: Callable):
@@ -118,10 +123,18 @@ class XimcRedmine:
         :param url: url address of page with filtered issues.
         """
 
-        try:
-            html = requests.get(url, auth=(self._username, self._password), timeout=3).text
-        except requests.exceptions:
-            return {}
+        attempt = 0
+        html = None
+        while attempt < MAX_ATTEMPTS_NUMBER:
+            try:
+                html = requests.get(url, auth=(self._username, self._password), timeout=3, headers=HEADERS).text
+            except Exception:
+                attempt += 1
+                time.sleep(0.5)
+            else:
+                attempt = MAX_ATTEMPTS_NUMBER
+        if html is None:
+            return
         soup = BeautifulSoup(html, "html.parser")
         ps_query_totals = soup.find_all("p", {"class": "query-totals"})
         for p_query_totals in ps_query_totals:

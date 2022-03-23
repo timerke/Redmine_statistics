@@ -2,13 +2,15 @@
 Example file.
 """
 
+import configparser
 import sys
 from ximc import XimcRedmine
 
 if __name__ == "__main__":
-
-    user_name = ""
-    password = ""
+    config = configparser.ConfigParser()
+    config.read("config.ini")
+    user_name = config.get("MAIN", "login")
+    password = config.get("MAIN", "password")
     try:
         ximc_user = XimcRedmine(user_name, password)
         ximc_user.auth()
